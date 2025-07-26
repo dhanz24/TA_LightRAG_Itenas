@@ -23,7 +23,7 @@ setup_logger("lightrag", level="DEBUG")
 nest_asyncio.apply()
 
 load_dotenv()
-gemini_api_key = os.getenv("GEMINI_API_KEY", "AIzaSyCmOiGV_F_gVHyiFKIn2JWJf3zFMtj8dnU")
+gemini_api_key = os.getenv("GEMINI_API_KEY")
 
 WORKING_DIR = "./TA_Storage"
 
@@ -113,7 +113,7 @@ async def my_rerank_func(query: str, documents: list, top_n: int = None, **kwarg
         documents=documents,
         model="jina-reranker-v2-base-multilingual",
         base_url="https://api.jina.ai/v1/rerank",
-        api_key="jina_606fa93727bb478f9117c8491939ece7X_XK417D8U8jYKQ8DxAJK4aO7CHc",
+        api_key=os.getenv("RERANK_BINDING_API_KEY"),
         top_n=top_n or 10,
         **kwargs,
     )

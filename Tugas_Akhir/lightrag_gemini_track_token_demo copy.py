@@ -23,7 +23,7 @@ nest_asyncio.apply()
 
 # Load environment variables
 load_dotenv()
-gemini_api_key = os.getenv("GEMINI_API_KEY", "AIzaSyDbjYAPstou6ljyq26Z-gmTP05_AnyS4xs")
+gemini_api_key = os.getenv("GEMINI_API_KEY")
 
 # Working directory setup
 WORKING_DIR = "./TA_Storage"
@@ -80,8 +80,7 @@ async def initialize_rag():
                 host=os.getenv("EMBEDDING_BINDING_HOST", "http://localhost:11434"),
             ),
         ),
-        vector_storage="FaissVectorDBStorage",
-        rerank_model_func=my_rerank_func,
+        vector_storage="FaissVectorDBStorage"
     )
     await rag.initialize_storages()
     await initialize_pipeline_status()
