@@ -1,5 +1,6 @@
 # pip install -q -U google-genai to use gemini as a client
 import pandas as pd
+import csv
 import os
 import asyncio
 import numpy as np
@@ -79,6 +80,7 @@ async def llm_model_func(
         }
 
         token_tracker.add_usage(token_counts)
+        token_tracker.add_prompt(combined_prompt)
 
         # Return the response text
         return response.text
@@ -139,8 +141,7 @@ async def initialize_rag():
         vector_storage="FaissVectorDBStorage",
         vector_db_storage_cls_kwargs={
             "cosine_better_than_threshold": 0.3  # Your desired threshold
-        },
-        rerank_model_func=my_rerank_func,
+        }
     )
 
     # rag = LightRAG(
@@ -196,15 +197,19 @@ def main():
             naive_answer = rag.query(question, param=QueryParam(mode="naive"))
             # Get the token count after running queries
             naive_token_count = token_tracker.get_usage()  # Get token usage after query
+            naive_prompt = token_tracker.get_prompt()
             token_tracker.reset()  # Reset token count
             local_answer = rag.query(question, param=QueryParam(mode="local"))
             local_token_count = token_tracker.get_usage()
+            local_prompt = token_tracker.get_prompt()
             token_tracker.reset()
             global_answer = rag.query(question, param=QueryParam(mode="global"))
             global_token_count = token_tracker.get_usage()
+            global_prompt = token_tracker.get_prompt()
             token_tracker.reset()
             hybrid_answer = rag.query(question, param=QueryParam(mode="hybrid"))
             hybrid_token_count = token_tracker.get_usage()
+            hybrid_prompt = token_tracker.get_prompt()
             token_tracker.reset()
 
             # Store the results in a dictionary
@@ -218,42 +223,29 @@ def main():
                 "Local Token Count": local_token_count["total_tokens"],
                 "Global Token Count": global_token_count["total_tokens"],
                 "Hybrid Token Count": hybrid_token_count["total_tokens"],
+
+                "Naive Prompt": naive_prompt,
+                "Local Prompt": local_prompt,
+                "Global Prompt": global_prompt,
+                "Hybrid Prompt": hybrid_prompt,
+
+                "Naive Prompt Token Count": naive_token_count["prompt_tokens"],
+                "Local Prompt Token Count": local_token_count["prompt_tokens"],
+                "Global Prompt Token Count": global_token_count["prompt_tokens"],
+                "Hybrid Prompt Token Count": hybrid_token_count["prompt_tokens"],
             }
             results.append(answers)
 
     # Save the results to an Excel file or CSV
     result_df = pd.DataFrame(results)
-    # result_df.to_csv("hasil_uji_with_tokens.csv", index=False)  # Save to CSV
-    result_df.to_excel("hasil_uji_with_tokens.xlsx", index=False)  # Uncomment to save as Excel
-
-
-    # Context Manager Method
-    # with token_tracker:
-    #     print(
-    #         rag.query(
-    #             "siapa rektor itenas?", param=QueryParam(mode="naive")
-    #         )
-    #     )
-
-    #     print(
-    #         rag.query(
-    #             "siapa rektor itenas?", param=QueryParam(mode="local")
-    #         )
-    #     )
-
-    #     print(
-    #         rag.query(
-    #             "siapa rektor itenas?",
-    #             param=QueryParam(mode="global"),
-    #         )
-    #     )
-
-    #     print(
-    #         rag.query(
-    #             "siapa rektor itenas?",
-    #             param=QueryParam(mode="hybrid"),
-    #         )
-    #     )
+    try :
+        result_df.to_csv("./Tugas_Akhir/results/hasil_uji_with_tokens.csv", index=False, quoting=csv.QUOTE_ALL)  # Menggunakan QUOTE_ALL untuk mengutip semua kolom
+        result_df.to_excel("./Tugas_Akhir/results/hasil_uji_with_tokens.xlsx", index=False)  # Uncomment to save as Excel
+    except PermissionError:
+        result_df.to_csv("/Tugas_Akhir/results/hasil_uji_with_tokens_Backup.csv", index=False)
+        result_df.to_excel("/Tugas_Akhir/results/hasil_uji_with_tokens_Backup.xlsx", index=False)
+    except Exception as e:
+        print(f"Error When Saving: {e}")
 
 
 if __name__ == "__main__":

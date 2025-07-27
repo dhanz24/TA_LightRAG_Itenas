@@ -1691,6 +1691,7 @@ class TokenTracker:
         self.completion_tokens = 0
         self.total_tokens = 0
         self.call_count = 0
+        self.prompt = ""
 
     def add_usage(self, token_counts):
         """Add token usage from one LLM call.
@@ -1710,6 +1711,12 @@ class TokenTracker:
             ) + token_counts.get("completion_tokens", 0)
 
         self.call_count += 1
+
+    def add_prompt(self, prompt):
+        self.prompt = prompt
+
+    def get_prompt(self):
+        return self.prompt
 
     def get_usage(self):
         """Get current usage statistics."""
